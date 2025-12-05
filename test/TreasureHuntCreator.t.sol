@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.28;
 
-import "forge-std/Test.sol";
-import "../src/playerHunt.sol";
-import "../src/TreasureHuntCreator.sol";
+import {Test} from "lib/forge-std/src/Test.sol";
+import {TreasureHuntPlayer} from "../src/TreasureHuntPlayer.sol";
+import {TreasureHuntCreator} from "../src/TreasureHuntCreator.sol";
 import {MockERC20} from "./mocks/MockERC20.sol";
 
 contract TreasureHuntCreatorTest is Test {
     MockERC20 token;
     TreasureHuntPlayer player;
     TreasureHuntCreator creator;
+
+    address public creatorAddr = makeAddr("owner");
 
     function setUp() public {
         token = new MockERC20();
@@ -18,7 +20,6 @@ contract TreasureHuntCreatorTest is Test {
     }
 
     function testCreatorFlow_CreateAddFund() public {
-        address creatorAddr = address(0xBEEF);
 
         // register the creator
         vm.prank(creatorAddr);
@@ -30,8 +31,8 @@ contract TreasureHuntCreatorTest is Test {
 
         // add a clue and receive a QR string
         vm.prank(creatorAddr);
-        string memory qr = creator.addClueWithGeneratedQR(huntId, "Find the statue", 0.1 ether, "Park");
-        assert(bytes(qr).length > 0, "QR string should be returned");
+        string memory qr = creator.addClueWithGeneratedQr(huntId, "Find the statue", 0.1 ether, "Park");
+        assert(bytes(qr).length > 0); // QR string should be returned
 
         // mint tokens to the creator and approve Creator contract
         token.mint(creatorAddr, 1 ether);

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+
+pragma solidity ^0.8.28;
 
 import {IERC20} from "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {ReentrancyGuard} from "lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
@@ -169,8 +170,7 @@ contract TreasureHuntPlayer is ReentrancyGuard, Pausable, Ownable {
      * @notice Ensures the hunt exists and is active
      */
     modifier huntExists(uint256 _huntId) {
-        require(_huntId < huntCounter, "Hunt does not exist");
-        require(hunts[_huntId].isActive, "Hunt is not active");
+        _huntExists(_huntId);
         _;
     }
     
@@ -178,7 +178,7 @@ contract TreasureHuntPlayer is ReentrancyGuard, Pausable, Ownable {
      * @notice Ensures only the hunt creator can perform the action
      */
     modifier onlyCreator(uint256 _huntId) {
-        require(msg.sender == hunts[_huntId].creator, "Only creator allowed");
+        _onlyCreator(_huntId);
         _;
     }
     
@@ -186,12 +186,9 @@ contract TreasureHuntPlayer is ReentrancyGuard, Pausable, Ownable {
      * @notice Rate limiting for submissions
      */
     modifier rateLimit(uint256 _huntId) {
-        require(
-            block.timestamp >= lastSubmissionTime[_huntId][msg.sender] + MIN_SUBMISSION_INTERVAL,
-            "Submission too frequent"
-        );
+        _rateLimitBefore(_huntId);
         _;
-        lastSubmissionTime[_huntId][msg.sender] = block.timestamp;
+        _rateLimitAfter(_huntId);
     }
     
     // ============ CONSTRUCTOR ============
@@ -422,7 +419,7 @@ contract TreasureHuntPlayer is ReentrancyGuard, Pausable, Ownable {
      */
     function selectHunt(uint256 _huntId) 
         external 
-        view 
+        view
         huntExists(_huntId)
         returns (
             string memory title,
@@ -476,7 +473,7 @@ contract TreasureHuntPlayer is ReentrancyGuard, Pausable, Ownable {
      */
     function viewCurrentClue(uint256 _huntId) 
         external 
-        view 
+        view
         huntExists(_huntId)
         returns (
             string memory clueText,
@@ -778,4 +775,24 @@ contract TreasureHuntPlayer is ReentrancyGuard, Pausable, Ownable {
     function isHuntPlayable(uint256 _huntId) external view returns (bool) {
         return hunts[_huntId].isActive && hunts[_huntId].isFunded;
     }
+
+    function _huntExists(uint256 _huntId) internal view {
+        require(_huntId < huntCounter, "Hunt does not exist");
+        require(hunts[_huntId].isActive, "Hunt is not active");
+    }
+
+    function _onlyCreator(uint256 _huntId) internal view {
+        require(msg.sender == hunts[_huntId].creator, "Only creator allowed");
+    }
+
+    function _rateLimitBefore(uint256 _huntId) internal view {
+        require(
+            block.timestamp >= lastSubmissionTime[_huntId][msg.sender] + MIN_SUBMISSION_INTERVAL,
+            "Submission too frequent"
+        );
+    }
+
+    function _rateLimitAfter(uint256 _huntId) internal {
+        lastSubmissionTime[_huntId][msg.sender] = block.timestamp;
+     }
 }

@@ -1,18 +1,22 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.28;
 
-import "forge-std/Test.sol";
-import "../src/playerHunt.sol";
-import "../src/TreasureHuntCreator.sol";
+import {IERC20} from "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
+/// @notice Minimal ERC20 mock for testing. NOT production-safe.
 contract MockERC20 is IERC20 {
-    string public name = "MockToken";
-    string public symbol = "MCK";
-    uint8 public decimals = 18;
+    string public constant NAME = "MockToken";
+    string public constant SYMBOL = "MCK";
+    uint8 public constant DECIMALS = 18;
 
     uint256 private _totalSupply;
+
     mapping(address => uint256) private _balances;
     mapping(address => mapping(address => uint256)) private _allowances;
+
+    /*//////////////////////////////////////////////////////////////
+                               VIEW LOGIC
+    //////////////////////////////////////////////////////////////*/
 
     function totalSupply() external view override returns (uint256) {
         return _totalSupply;
@@ -26,10 +30,12 @@ contract MockERC20 is IERC20 {
         return _allowances[owner][spender];
     }
 
+    /*//////////////////////////////////////////////////////////////
+                             MUTATION LOGIC
+    //////////////////////////////////////////////////////////////*/
+
     function transfer(address to, uint256 amount) external override returns (bool) {
-        require(_balances[msg.sender] >= amount, "insufficient balance");
-        _balances[msg.sender] -= amount;
-        _balances[to] += amount;
+        _transfer(msg.sender, to, amount);
         return true;
     }
 
@@ -39,15 +45,32 @@ contract MockERC20 is IERC20 {
     }
 
     function transferFrom(address from, address to, uint256 amount) external override returns (bool) {
-        require(_balances[from] >= amount, "insufficient balance");
-        require(_allowances[from][msg.sender] >= amount, "insufficient allowance");
-        _allowances[from][msg.sender] -= amount;
-        _balances[from] -= amount;
-        _balances[to] += amount;
+        uint256 allowed = _allowances[from][msg.sender];
+        require(allowed >= amount, "insufficient allowance");
+
+        _allowances[from][msg.sender] = allowed - amount;
+
+        _transfer(from, to, amount);
         return true;
     }
 
-    // helper mint for tests
+    /*//////////////////////////////////////////////////////////////
+                             INTERNAL LOGIC
+    //////////////////////////////////////////////////////////////*/
+
+    function _transfer(address from, address to, uint256 amount) internal {
+        require(_balances[from] >= amount, "insufficient balance");
+        unchecked {
+            _balances[from] -= amount;
+            _balances[to] += amount;
+        }
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                              TEST HELPERS
+    //////////////////////////////////////////////////////////////*/
+
+    /// @notice Direct mint for testing. No access control on purpose.
     function mint(address to, uint256 amount) external {
         _balances[to] += amount;
         _totalSupply += amount;

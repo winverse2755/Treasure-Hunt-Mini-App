@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+
+pragma solidity ^0.8.28;
 
 import {IERC20} from "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {Ownable} from "lib/openzeppelin-contracts/contracts/access/Ownable.sol";
@@ -30,7 +31,7 @@ interface ITreasureHuntPlayer {
  * `TreasureHuntPlayer` contract expects, while forwarding actions from the real user.
  */
 contract TreasureHuntCreator is Ownable {
-    ITreasureHuntPlayer public immutable player;
+    ITreasureHuntPlayer public immutable PLAYER;
 
     // Registered creators who opted-in
     mapping(address => bool) public registeredCreator;
@@ -48,13 +49,13 @@ contract TreasureHuntCreator is Ownable {
     event HuntFunded(uint256 indexed huntId, uint256 amount);
     event HuntPublished(uint256 indexed huntId);
 
-    constructor(address _player) Ownable() {
+    constructor(address _player) Ownable(msg.sender) {
         require(_player != address(0), "player address zero");
-        player = ITreasureHuntPlayer(_player);
+        PLAYER = ITreasureHuntPlayer(_player);
     }
 
     modifier onlyRegistered() {
-        require(registeredCreator[msg.sender], "Not a registered creator");
+        _onlyRegistered();
         _;
     }
 
@@ -80,7 +81,7 @@ contract TreasureHuntCreator is Ownable {
      * locally as the logical owner.
      */
     function createHunt(string memory _title, string memory _description) external onlyRegistered returns (uint256) {
-        uint256 huntId = player.createHunt(_title, _description);
+        uint256 huntId = PLAYER.createHunt(_title, _description);
         huntOwner[huntId] = msg.sender;
         emit HuntCreated(huntId, msg.sender);
         return huntId;
@@ -91,7 +92,7 @@ contract TreasureHuntCreator is Ownable {
      * is stored as the clue answer in the `TreasureHuntPlayer` (which stores a hash).
      * @dev Caller must be the registered owner of the hunt (logical owner stored in this contract).
      */
-    function addClueWithGeneratedQR(
+    function addClueWithGeneratedQr(
         uint256 _huntId,
         string memory _clueText,
         uint256 _reward,
@@ -100,7 +101,7 @@ contract TreasureHuntCreator is Ownable {
         require(huntOwner[_huntId] == msg.sender, "Not owner of hunt");
 
         // Read current clueCount from player to determine the index after add
-        (, , , , uint256 clueCount, , , , , ) = player.hunts(_huntId);
+        (, , , , uint256 clueCount, , , , , ) = PLAYER.hunts(_huntId);
 
         // generate token
         bytes32 token = keccak256(abi.encodePacked(block.timestamp, msg.sender, _huntId, nonce));
@@ -109,7 +110,7 @@ contract TreasureHuntCreator is Ownable {
         string memory tokenStr = _toHexString(token);
 
         // add clue on behalf of this contract; player will hash the answer (tokenStr)
-        player.addClue(_huntId, _clueText, tokenStr, _reward, _location);
+        PLAYER.addClue(_huntId, _clueText, tokenStr, _reward, _location);
 
         uint256 newClueIndex = clueCount; // addClue appends at previous length
 
@@ -128,16 +129,16 @@ contract TreasureHuntCreator is Ownable {
     function fundHunt(uint256 _huntId, uint256 _amount) external onlyRegistered {
         require(huntOwner[_huntId] == msg.sender, "Not owner of hunt");
 
-        IERC20 token = player.C_USD();
+        IERC20 token = PLAYER.C_USD();
 
         // Pull tokens from the creator to this contract
         require(token.transferFrom(msg.sender, address(this), _amount), "transferFrom failed");
 
         // Approve player contract to pull tokens from this contract
-        require(token.approve(address(player), _amount), "approve failed");
+        require(token.approve(address(PLAYER), _amount), "approve failed");
 
         // Call player.fundHunt (msg.sender will be this contract)
-        player.fundHunt(_huntId, _amount);
+        PLAYER.fundHunt(_huntId, _amount);
 
         emit HuntFunded(_huntId, _amount);
     }
@@ -178,15 +179,19 @@ contract TreasureHuntCreator is Ownable {
         bytes memory buffer = new bytes(digits);
         while (value != 0) {
             digits -= 1;
+
+            // casting to uint8 is safe because (value % 10) is always 0–9, 
+            // so 48 + (value % 10) is always 48–57 (ASCII digits), which fits in uint8.
+            // forge-lint: disable-next-line(unsafe-typecast)
             buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
+
             value /= 10;
         }
         return string(buffer);
     }
-}
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
 
-contract TreasureHuntCreator {
-    
+    function _onlyRegistered() internal view {
+        require(registeredCreator[msg.sender], "Not a registered creator");
+    }
 }
+

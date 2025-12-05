@@ -1,19 +1,7 @@
-// // SPDX-License-Identifier: UNLICENSED
-// pragma solidity ^0.8.13;
+// SPDX-License-Identifier: MIT
 
-// import {Script} from "forge-std/Script.sol";
-// import {TreasureHunt} from "../src/TreasureHunt.sol";
+pragma solidity ^0.8.28;
 
-// contract TreasureHuntScript is Script {
-//     TreasureHunt public counter;
+import {Script} from "lib/forge-std/src/Script.sol";
 
-//     function setUp() public {}
-
-//     function run() public {
-//         vm.startBroadcast();
-
-//         counter = new TreasureHunt();
-
-//         vm.stopBroadcast();
-//     }
-// }
+contract TreasureHuntScript is Script {}
