@@ -19,9 +19,17 @@ contract SimpleToken is IERC20 {
     mapping(address => uint256) private _balances;
     mapping(address => mapping(address => uint256)) private _allowances;
 
-    function totalSupply() external view override returns (uint256) { return _totalSupply; }
-    function balanceOf(address account) external view override returns (uint256) { return _balances[account]; }
-    function allowance(address owner, address spender) external view override returns (uint256) { return _allowances[owner][spender]; }
+    function totalSupply() external view override returns (uint256) {
+        return _totalSupply;
+    }
+
+    function balanceOf(address account) external view override returns (uint256) {
+        return _balances[account];
+    }
+
+    function allowance(address owner, address spender) external view override returns (uint256) {
+        return _allowances[owner][spender];
+    }
 
     function transfer(address to, uint256 amount) external override returns (bool) {
         require(_balances[msg.sender] >= amount, "insufficient");

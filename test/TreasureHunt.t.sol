@@ -97,7 +97,7 @@ contract TreasureHuntTest is Test {
         assertTrue(completed, "player should have completed hunt");
 
         // Leaderboard should list player
-        (address[] memory players, , ) = player.viewLeaderboard(huntId);
+        (address[] memory players,,) = player.viewLeaderboard(huntId);
         assertEq(players.length, 1);
         assertEq(players[0], playerAddr);
     }
@@ -122,7 +122,9 @@ contract TreasureHuntTest is Test {
                 uint256 start = i + markerLen;
                 uint256 len = b.length - start;
                 bytes memory out = new bytes(len);
-                for (uint256 k = 0; k < len; k++) out[k] = b[start + k];
+                for (uint256 k = 0; k < len; k++) {
+                    out[k] = b[start + k];
+                }
                 return string(out);
             }
         }
