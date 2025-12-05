@@ -4,7 +4,7 @@ out = "out"
 libs = ["lib"]
 
 remappings = [
-    'lib/openzeppelin-contracts/contracts=lib/forge-std/openzeppelin-contracts/contracts'
+    '@openzeppelin/contracts=lib/openzeppelin-contracts/contracts'
 ]
 
 [lint]
