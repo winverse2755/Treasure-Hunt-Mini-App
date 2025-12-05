@@ -9,18 +9,21 @@ interface ITreasureHuntPlayer {
     function createHunt(string memory, string memory) external returns (uint256);
     function addClue(uint256, string memory, string memory, uint256, string memory) external;
     function fundHunt(uint256, uint256) external;
-    function hunts(uint256) external view returns (
-        address creator,
-        string memory title,
-        string memory description,
-        uint256 totalReward,
-        uint256 clueCount,
-        bool isActive,
-        bool isFunded,
-        uint256 createdAt,
-        uint256 totalParticipants,
-        uint256 totalCompletions
-    );
+    function hunts(uint256)
+        external
+        view
+        returns (
+            address creator,
+            string memory title,
+            string memory description,
+            uint256 totalReward,
+            uint256 clueCount,
+            bool isActive,
+            bool isFunded,
+            uint256 createdAt,
+            uint256 totalParticipants,
+            uint256 totalCompletions
+        );
     function C_USD() external view returns (IERC20);
 }
 
@@ -92,16 +95,15 @@ contract TreasureHuntCreator is Ownable {
      * is stored as the clue answer in the `TreasureHuntPlayer` (which stores a hash).
      * @dev Caller must be the registered owner of the hunt (logical owner stored in this contract).
      */
-    function addClueWithGeneratedQr(
-        uint256 _huntId,
-        string memory _clueText,
-        uint256 _reward,
-        string memory _location
-    ) external onlyRegistered returns (string memory) {
+    function addClueWithGeneratedQr(uint256 _huntId, string memory _clueText, uint256 _reward, string memory _location)
+        external
+        onlyRegistered
+        returns (string memory)
+    {
         require(huntOwner[_huntId] == msg.sender, "Not owner of hunt");
 
         // Read current clueCount from player to determine the index after add
-        (, , , , uint256 clueCount, , , , , ) = PLAYER.hunts(_huntId);
+        (,,,, uint256 clueCount,,,,,) = PLAYER.hunts(_huntId);
 
         // generate token
         bytes32 token = keccak256(abi.encodePacked(block.timestamp, msg.sender, _huntId, nonce));
@@ -115,7 +117,11 @@ contract TreasureHuntCreator is Ownable {
         uint256 newClueIndex = clueCount; // addClue appends at previous length
 
         // Build a QR-style URI that frontend can convert to a scannable QR code
-        string memory qr = string(abi.encodePacked("celo-hunt://hunt/", _toDecString(_huntId), "/clue/", _toDecString(newClueIndex), "/token/", tokenStr));
+        string memory qr = string(
+            abi.encodePacked(
+                "celo-hunt://hunt/", _toDecString(_huntId), "/clue/", _toDecString(newClueIndex), "/token/", tokenStr
+            )
+        );
 
         emit ClueAddedWithQR(_huntId, newClueIndex, qr);
         return qr;
@@ -160,8 +166,8 @@ contract TreasureHuntCreator is Ownable {
         bytes memory str = new bytes(64);
         for (uint256 i = 0; i < 32; i++) {
             uint8 b = uint8(data[i]);
-            str[i*2] = alphabet[b >> 4];
-            str[1+i*2] = alphabet[b & 0x0f];
+            str[i * 2] = alphabet[b >> 4];
+            str[1 + i * 2] = alphabet[b & 0x0f];
         }
         return string(str);
     }
@@ -180,7 +186,7 @@ contract TreasureHuntCreator is Ownable {
         while (value != 0) {
             digits -= 1;
 
-            // casting to uint8 is safe because (value % 10) is always 0–9, 
+            // casting to uint8 is safe because (value % 10) is always 0–9,
             // so 48 + (value % 10) is always 48–57 (ASCII digits), which fits in uint8.
             // forge-lint: disable-next-line(unsafe-typecast)
             buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));

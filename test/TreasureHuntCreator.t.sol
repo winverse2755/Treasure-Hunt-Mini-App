@@ -20,7 +20,6 @@ contract TreasureHuntCreatorTest is Test {
     }
 
     function testCreatorFlow_CreateAddFund() public {
-
         // register the creator
         vm.prank(creatorAddr);
         creator.registerCreator();
@@ -44,7 +43,7 @@ contract TreasureHuntCreatorTest is Test {
         creator.fundHunt(huntId, 1 ether);
 
         // verify the hunt is funded in player contract
-        ( , , , , , , bool isFunded, , , ) = player.hunts(huntId);
+        (,,,,,, bool isFunded,,,) = player.hunts(huntId);
         assertTrue(isFunded, "Hunt should be funded after funding via creator");
     }
 }
