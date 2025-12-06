@@ -59,31 +59,20 @@ contract SetupHunt is Script {
 
         // 3. Add first clue with reward
         console.log("Adding clue 1...");
-        string memory qr1 = creator.addClueWithGeneratedQr(
-            huntId,
-            "Find the statue at the town square",
-            0.5 ether,
-            "Town Square"
-        );
+        string memory qr1 =
+            creator.addClueWithGeneratedQr(huntId, "Find the statue at the town square", 0.5 ether, "Town Square");
         console.log("QR Code 1:", qr1);
 
         // 4. Add second clue with reward
         console.log("Adding clue 2...");
-        string memory qr2 = creator.addClueWithGeneratedQr(
-            huntId,
-            "Follow the river to the old bridge",
-            0.3 ether,
-            "Old Bridge"
-        );
+        string memory qr2 =
+            creator.addClueWithGeneratedQr(huntId, "Follow the river to the old bridge", 0.3 ether, "Old Bridge");
         console.log("QR Code 2:", qr2);
 
         // 5. Add third clue with reward
         console.log("Adding clue 3...");
         string memory qr3 = creator.addClueWithGeneratedQr(
-            huntId,
-            "The treasure is buried under the old oak tree",
-            0.2 ether,
-            "Ancient Oak"
+            huntId, "The treasure is buried under the old oak tree", 0.2 ether, "Ancient Oak"
         );
         console.log("QR Code 3:", qr3);
 
