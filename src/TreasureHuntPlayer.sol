@@ -15,7 +15,7 @@ import {Clue, Hunt, PlayerStats} from "./TreasureHuntTypes.sol";
  *
  * CELO-SPECIFIC FEATURES:
  * - Uses cUSD as the native reward token (CELO's stable currency)
- * - Optimized for mobile-first treasure hunting on CELO Alfajores testnet
+ * - Optimized for mobile-first treasure hunting on CELO Mainnet
  * - Supports CELO's ContractKit for seamless wallet integration
  * - Real-time balance tracking and transaction handling
  */
@@ -122,7 +122,7 @@ contract TreasureHuntPlayer is ReentrancyGuard, Pausable, Ownable {
 
     /**
      * @notice Initialize the contract with cUSD token address
-     * @param _cusdAddress Address of cUSD token on CELO (Sepolia: 0x9a7bE83f04EE0f092fF4f0da2A9e96aDb2De1925)
+     * @param _cusdAddress Address of cUSD token on CELO (Mainnet: 0x765DE816845861e75A25fCA122bb6898B8B1282a)
      */
     constructor(address _cusdAddress) Ownable(msg.sender) {
         C_USD = IERC20(_cusdAddress);
