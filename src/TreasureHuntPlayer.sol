@@ -122,7 +122,7 @@ contract TreasureHuntPlayer is ReentrancyGuard, Pausable, Ownable {
 
     /**
      * @notice Initialize the contract with cUSD token address
-     * @param _cusdAddress Address of cUSD token on CELO (Alfajores: 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1)
+     * @param _cusdAddress Address of cUSD token on CELO (Sepolia: 0x9a7bE83f04EE0f092fF4f0da2A9e96aDb2De1925)
      */
     constructor(address _cusdAddress) Ownable(msg.sender) {
         C_USD = IERC20(_cusdAddress);
