@@ -60,24 +60,24 @@ contract SetupHunt is Script {
         // 3. Add first clue with reward
         console.log("Adding clue 1...");
         string memory qr1 =
-            creator.addClueWithGeneratedQr(huntId, "Find the statue at the town square", 0.5 ether, "Town Square");
+            creator.addClueWithGeneratedQr(huntId, "Find the statue at the town square", 0.04 ether, "Town Square");
         console.log("QR Code 1:", qr1);
 
         // 4. Add second clue with reward
         console.log("Adding clue 2...");
         string memory qr2 =
-            creator.addClueWithGeneratedQr(huntId, "Follow the river to the old bridge", 0.3 ether, "Old Bridge");
+            creator.addClueWithGeneratedQr(huntId, "Follow the river to the old bridge", 0.03 ether, "Old Bridge");
         console.log("QR Code 2:", qr2);
 
         // 5. Add third clue with reward
         console.log("Adding clue 3...");
         string memory qr3 = creator.addClueWithGeneratedQr(
-            huntId, "The treasure is buried under the old oak tree", 0.2 ether, "Ancient Oak"
+            huntId, "The treasure is buried under the old oak tree", 0.03 ether, "Ancient Oak"
         );
         console.log("QR Code 3:", qr3);
 
         // 6. Approve tokens and fund the hunt
-        uint256 totalReward = 1 ether; // 0.5 + 0.3 + 0.2
+        uint256 totalReward = 0.1 ether; // 0.04 + 0.03 + 0.03 = 0.1 cUSD
         console.log("Approving tokens for funding...");
         token.approve(creatorAddr, totalReward);
 

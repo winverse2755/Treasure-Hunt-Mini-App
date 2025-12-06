@@ -52,8 +52,8 @@ contract TreasureHuntPlayer is ReentrancyGuard, Pausable, Ownable {
     /// @notice Maximum number of clues per hunt
     uint256 public constant MAX_CLUES_PER_HUNT = 20;
 
-    /// @notice Minimum reward per clue (0.1 cUSD)
-    uint256 public constant MIN_REWARD_PER_CLUE = 0.1 ether;
+    /// @notice Minimum reward per clue (0.01 cUSD)
+    uint256 public constant MIN_REWARD_PER_CLUE = 0.01 ether;
 
     // ============ EVENTS ============
 
