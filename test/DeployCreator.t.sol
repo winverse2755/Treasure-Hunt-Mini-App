@@ -9,7 +9,9 @@ import {MockERC20} from "./mocks/MockERC20.sol";
 /**
  * @title DeployCreatorTest
  * @notice Tests to verify the deployment script `script/DeployCreator.s.sol` works correctly
- * and deploys both contracts with proper initialization.
+ * and deploys the Creator contract with proper initialization.
+ * @dev Note: The actual deployment script only deploys Creator and requires PLAYER_ADDRESS.
+ * These tests deploy both contracts to verify the integration works correctly.
  */
 contract DeployCreatorTest is Test {
     function testDeployWithExistingToken() public {
@@ -80,8 +82,7 @@ contract DeployCreatorTest is Test {
 
         // Add a clue
         vm.prank(creatorAddr);
-        string memory qr = creator.addClueWithGeneratedQr(huntId, "Test clue", 0.1 ether, "Test location");
-        assertTrue(bytes(qr).length > 0, "QR code should be generated");
+        creator.addClue(huntId, "Test clue", "answer", 0.1 ether, "Test location");
 
         // Fund the hunt
         vm.prank(creatorAddr);

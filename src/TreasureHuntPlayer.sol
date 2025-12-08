@@ -11,7 +11,7 @@ import {Clue, Hunt, PlayerStats} from "./TreasureHuntTypes.sol";
 /**
  * @title TreasureHuntPlayer
  * @notice A CELO-native treasure hunt game where players solve location-based puzzles for cUSD rewards
- * @dev Implements a secure multi-clue hunt system with QR code verification and leaderboard tracking
+ * @dev Implements a secure multi-clue hunt system with manual answer verification and leaderboard tracking
  *
  * CELO-SPECIFIC FEATURES:
  * - Uses cUSD as the native reward token (CELO's stable currency)
@@ -152,7 +152,7 @@ contract TreasureHuntPlayer is ReentrancyGuard, Pausable, Ownable {
         newHunt.isFunded = false;
         newHunt.createdAt = block.timestamp;
         newHunt.clueCount = 0;
-        newHunt.totalReward = 0;
+        newHunt.totalReward = 0; // Initialized to 0, will be dynamically accumulated as clues are added
 
         emit HuntCreated(huntId, msg.sender, _title, 0, 0);
         return huntId;
@@ -163,7 +163,7 @@ contract TreasureHuntPlayer is ReentrancyGuard, Pausable, Ownable {
      * @dev Clues must be added before funding the hunt
      * @param _huntId The hunt to add the clue to
      * @param _clueText The riddle or instruction text
-     * @param _answer The correct answer (will be hashed for QR validation)
+     * @param _answer The correct answer (will be hashed for verification)
      * @param _reward cUSD reward amount in wei
      * @param _location Optional location hint
      */
@@ -191,6 +191,7 @@ contract TreasureHuntPlayer is ReentrancyGuard, Pausable, Ownable {
         newClue.clueIndex = clueIndex;
         newClue.location = _location;
 
+        // totalReward is dynamically accumulated from clue rewards (no hardcoded amounts)
         hunt.totalReward += _reward;
 
         emit ClueAdded(_huntId, clueIndex, _reward);
@@ -199,13 +200,15 @@ contract TreasureHuntPlayer is ReentrancyGuard, Pausable, Ownable {
     /**
      * @notice Fund the hunt with cUSD to activate it
      * @dev Creator must approve this contract to spend cUSD first
+     * @dev No hardcoded amounts - _amount and totalReward are both dynamic
      * @param _huntId The hunt to fund
-     * @param _amount Amount of cUSD to deposit (should equal totalReward * expected players)
+     * @param _amount Amount of cUSD to deposit (must be >= hunt.totalReward, which is dynamically calculated from clue rewards)
      */
     function fundHunt(uint256 _huntId, uint256 _amount) external onlyCreator(_huntId) nonReentrant whenNotPaused {
         Hunt storage hunt = hunts[_huntId];
         require(!hunt.isFunded, "Hunt already funded");
         require(hunt.clueCount > 0, "No clues added");
+        // _amount is dynamic parameter, hunt.totalReward is dynamically accumulated from clue rewards
         require(_amount >= hunt.totalReward, "Insufficient funding");
 
         // Transfer cUSD from creator to contract
@@ -389,9 +392,9 @@ contract TreasureHuntPlayer is ReentrancyGuard, Pausable, Ownable {
 
     /**
      * @notice Submit an answer to the current clue
-     * @dev This is called when player scans QR code with format: celo-hunt://clue/{clueId}/verify/{token}
+     * @dev Players submit answers manually, which are hashed and compared against the stored answer hash
      * @param _huntId The hunt being played
-     * @param _answer The answer string (extracted from QR code)
+     * @param _answer The answer string submitted by the player
      */
     function submitAnswer(uint256 _huntId, string memory _answer)
         external
